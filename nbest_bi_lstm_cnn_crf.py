@@ -2,7 +2,7 @@
 # @Author: Max
 # @Date:   2017-02-15 17:41:48
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-15 19:23:08
+# @Last Modified time: 2017-02-16 13:27:32
 
 
 import time
@@ -10,6 +10,7 @@ import sys
 import argparse
 from lasagne_nlp.utils import utils
 from lasagne_nlp.utils import crf_nbest
+from lasagne_nlp.utils import write_emb
 import lasagne_nlp.utils.data_processor as data_processor
 from lasagne_nlp.utils.objectives import crf_loss, crf_accuracy
 import lasagne
@@ -114,6 +115,7 @@ def main():
     # construct input and mask layers
     layer_incoming1 = construct_char_input_layer()
     layer_incoming2 = construct_input_layer()
+    # word_embedding = lasagne.layers.get_all_params(layer_incoming2)
 
     layer_mask = lasagne.layers.InputLayer(shape=(None, max_length), input_var=mask_var, name='mask')
 
@@ -169,7 +171,7 @@ def main():
             grad_clipping,
             peepholes))
     num_batches = num_data / batch_size
-    num_epochs = 1000
+    num_epochs = 3
     best_loss = 1e+12
     best_acc = 0.0
     best_epoch_loss = 0
@@ -232,6 +234,7 @@ def main():
                 utils.output_predictions(predictions, targets, masks, 'tmp/dev%d' % epoch, label_alphabet,
                                          is_flattened=False)
             crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,'tmp/nbest_dev%d' % epoch, topn, is_flattened=False)
+        
         print 'dev loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
             dev_err / dev_inst, dev_corr, dev_total, dev_corr * 100 / dev_total)
 
@@ -250,7 +253,9 @@ def main():
                 best_acc = dev_corr / dev_total
                 best_epoch_acc = epoch
 
-            # evaluate on test data when better performance detected
+            # evaluate on test data when better performance detected, save embedding first
+            word_embedding = lasagne.layers.get_all_param_values(layer_incoming2)
+            write_emb.write_to_file(word_embedding,'tmp/emb%d' % epoch)
             test_err = 0.0
             test_corr = 0.0
             test_total = 0
