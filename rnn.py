@@ -53,7 +53,7 @@ def main():
     updates = lasagne.updates.sgd(loss, params=params, learning_rate=learning_rate)
     train_fn = theano.function([input_var, target_var], [loss, acc, W, U, output], updates=updates)
 
-    for epoch in range(10000):
+    for epoch in range(3):
         print 'Epoch %d (learning rate=%.4f)' % (epoch, learning_rate)
         loss = 0.0
         correct = 0.0

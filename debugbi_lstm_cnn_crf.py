@@ -1,11 +1,17 @@
-__author__ = 'max'
+# -*- coding: utf-8 -*-
+# @Author: Max
+# @Date:   2017-02-15 17:07:42
+# @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
+# @Last Modified time: 2017-02-15 17:41:09
+
 
 import time
 import sys
 import argparse
 from lasagne_nlp.utils import utils
+from lasagne_nlp.utils import crf_nbest
 import lasagne_nlp.utils.data_processor as data_processor
-from lasagne_nlp.utils.objectives import crf_loss, crf_accuracy
+from lasagne_nlp.utils.objectives import crf_loss, crf_accuracy,crf_nbest_debug
 import lasagne
 import theano
 import theano.tensor as T
@@ -133,9 +139,12 @@ def main():
         loss_train = loss_train + gamma * l2_penalty
 
     _, corr_train = crf_accuracy(energies_train, target_var)
+
     corr_train = (corr_train * mask_var).sum(dtype=theano.config.floatX)
     prediction_eval, corr_eval = crf_accuracy(energies_eval, target_var)
     corr_eval = (corr_eval * mask_var).sum(dtype=theano.config.floatX)
+    debug_out = crf_nbest_debug(energies_eval,target_var)
+    # crf_para = crf_parameter(energies_eval)
 
     # Create update expressions for training.
     # hyper parameters to tune: learning rate, momentum, regularization.
@@ -151,7 +160,9 @@ def main():
                                updates=updates)
     # Compile a second function evaluating the loss and accuracy of network
     eval_fn = theano.function([input_var, target_var, mask_var, char_input_var],
-                              [loss_eval, corr_eval, num_tokens, prediction_eval])
+                              [loss_eval, corr_eval, num_tokens, prediction_eval, energies_eval])
+    debug_fn = theano.function([input_var, target_var, mask_var, char_input_var], debug_out,on_unused_input='ignore')
+
 
     # Finally, launch the training loop.
     logger.info(
@@ -161,7 +172,7 @@ def main():
             grad_clipping,
             peepholes))
     num_batches = num_data / batch_size
-    num_epochs = 2
+    num_epochs = 3
     best_loss = 1e+12
     best_acc = 0.0
     best_epoch_loss = 0
@@ -213,9 +224,10 @@ def main():
         dev_corr = 0.0
         dev_total = 0
         dev_inst = 0
+
         for batch in utils.iterate_minibatches(X_dev, Y_dev, masks=mask_dev, char_inputs=C_dev, batch_size=batch_size):
             inputs, targets, masks, char_inputs = batch
-            err, corr, num, predictions = eval_fn(inputs, targets, masks, char_inputs)
+            err, corr, num, predictions, crf_para = eval_fn(inputs, targets, masks, char_inputs)
             dev_err += err * inputs.shape[0]
             dev_corr += corr
             dev_total += num
@@ -223,6 +235,10 @@ def main():
             if output_predict:
                 utils.output_predictions(predictions, targets, masks, 'tmp/dev%d' % epoch, label_alphabet,
                                          is_flattened=False)
+            # debug_out = debug_fn(inputs, targets, masks, char_inputs)
+            # print "debug out:", debug_out[1]
+            crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,'tmp/dev_nbest%d' % epoch, 10, is_flattened=False)
+
 
         print 'dev loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
             dev_err / dev_inst, dev_corr, dev_total, dev_corr * 100 / dev_total)
@@ -250,7 +266,7 @@ def main():
             for batch in utils.iterate_minibatches(X_test, Y_test, masks=mask_test, char_inputs=C_test,
                                                    batch_size=batch_size):
                 inputs, targets, masks, char_inputs = batch
-                err, corr, num, predictions = eval_fn(inputs, targets, masks, char_inputs)
+                err, corr, num, predictions,crf_para = eval_fn(inputs, targets, masks, char_inputs)
                 test_err += err * inputs.shape[0]
                 test_corr += corr
                 test_total += num
@@ -289,6 +305,7 @@ def main():
     print 'test loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
         best_acc_test_err / test_inst, best_acc_test_corr, test_total, best_acc_test_corr * 100 / test_total)
     print "BiLSTM-CNN-CRF model finished!"
+
 
 def test():
     energies_var = T.tensor4('energies', dtype=theano.config.floatX)

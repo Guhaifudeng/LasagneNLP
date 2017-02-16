@@ -1,9 +1,15 @@
-__author__ = 'max'
+# -*- coding: utf-8 -*-
+# @Author: Max
+# @Date:   2017-02-15 17:41:48
+# @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
+# @Last Modified time: 2017-02-15 19:23:08
+
 
 import time
 import sys
 import argparse
 from lasagne_nlp.utils import utils
+from lasagne_nlp.utils import crf_nbest
 import lasagne_nlp.utils.data_processor as data_processor
 from lasagne_nlp.utils.objectives import crf_loss, crf_accuracy
 import lasagne
@@ -38,6 +44,7 @@ def main():
     parser.add_argument('--train')  # "data/POS-penn/wsj/split1/wsj1.train.original"
     parser.add_argument('--dev')  # "data/POS-penn/wsj/split1/wsj1.dev.original"
     parser.add_argument('--test')  # "data/POS-penn/wsj/split1/wsj1.test.original"
+    parser.add_argument('--nbest', type=int, default=10, help='Output top N best candidate')
 
     args = parser.parse_args()
 
@@ -63,7 +70,7 @@ def main():
         layer_char_input = lasagne.layers.DimshuffleLayer(layer_char_embedding, pattern=(0, 2, 1))
         return layer_char_input
 
-    logger = utils.get_logger("BiLSTM-CNN-CRF")
+    logger = utils.get_logger("NBEST-BiLSTM-CNN-CRF")
     fine_tune = args.fine_tune
     oov = args.oov
     regular = args.regular
@@ -79,6 +86,7 @@ def main():
     gamma = args.gamma
     output_predict = args.output_prediction
     dropout = args.dropout
+    topn = args.nbest
 
     X_train, Y_train, mask_train, X_dev, Y_dev, mask_dev, X_test, Y_test, mask_test, \
     embedd_table, label_alphabet, \
@@ -116,7 +124,7 @@ def main():
                                            grad_clipping=grad_clipping, peepholes=peepholes, num_filters=num_filters,
                                            dropout=dropout)
 
-    logger.info("Network structure: hidden=%d, filter=%d" % (num_units, num_filters))
+    logger.info("Network structure: hidden=%d, filter=%d, nbest=%d" % (num_units, num_filters, topn))
 
     # compute loss
     num_tokens = mask_var.sum(dtype=theano.config.floatX)
@@ -151,7 +159,7 @@ def main():
                                updates=updates)
     # Compile a second function evaluating the loss and accuracy of network
     eval_fn = theano.function([input_var, target_var, mask_var, char_input_var],
-                              [loss_eval, corr_eval, num_tokens, prediction_eval])
+                              [loss_eval, corr_eval, num_tokens, prediction_eval, energies_eval])
 
     # Finally, launch the training loop.
     logger.info(
@@ -161,7 +169,7 @@ def main():
             grad_clipping,
             peepholes))
     num_batches = num_data / batch_size
-    num_epochs = 2
+    num_epochs = 1000
     best_loss = 1e+12
     best_acc = 0.0
     best_epoch_loss = 0
@@ -215,7 +223,7 @@ def main():
         dev_inst = 0
         for batch in utils.iterate_minibatches(X_dev, Y_dev, masks=mask_dev, char_inputs=C_dev, batch_size=batch_size):
             inputs, targets, masks, char_inputs = batch
-            err, corr, num, predictions = eval_fn(inputs, targets, masks, char_inputs)
+            err, corr, num, predictions, crf_para = eval_fn(inputs, targets, masks, char_inputs)
             dev_err += err * inputs.shape[0]
             dev_corr += corr
             dev_total += num
@@ -223,7 +231,7 @@ def main():
             if output_predict:
                 utils.output_predictions(predictions, targets, masks, 'tmp/dev%d' % epoch, label_alphabet,
                                          is_flattened=False)
-
+            crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,'tmp/nbest_dev%d' % epoch, topn, is_flattened=False)
         print 'dev loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
             dev_err / dev_inst, dev_corr, dev_total, dev_corr * 100 / dev_total)
 
@@ -250,7 +258,7 @@ def main():
             for batch in utils.iterate_minibatches(X_test, Y_test, masks=mask_test, char_inputs=C_test,
                                                    batch_size=batch_size):
                 inputs, targets, masks, char_inputs = batch
-                err, corr, num, predictions = eval_fn(inputs, targets, masks, char_inputs)
+                err, corr, num, predictions, crf_para = eval_fn(inputs, targets, masks, char_inputs)
                 test_err += err * inputs.shape[0]
                 test_corr += corr
                 test_total += num
@@ -258,7 +266,7 @@ def main():
                 if output_predict:
                     utils.output_predictions(predictions, targets, masks, 'tmp/test%d' % epoch, label_alphabet,
                                              is_flattened=False)
-
+                crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,'tmp/nbest_test%d' % epoch, topn, is_flattened=False)
             print 'test loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
                 test_err / test_inst, test_corr, test_total, test_corr * 100 / test_total)
 
