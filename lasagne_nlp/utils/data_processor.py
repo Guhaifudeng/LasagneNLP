@@ -1,4 +1,9 @@
-__author__ = 'max'
+# -*- coding: utf-8 -*-
+# @Author: Max
+# @Date:   2017-02-16 10:22:57
+# @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
+# @Last Modified time: 2017-02-16 13:39:03
+
 
 import numpy as np
 import theano
@@ -309,6 +314,20 @@ def build_embedd_table(word_alphabet, embedd_dict, embedd_dim, caseless):
         ww = word.lower() if caseless else word
         embedd = embedd_dict[ww] if ww in embedd_dict else np.random.uniform(-scale, scale, [1, embedd_dim])
         embedd_table[index, :] = embedd
+    emb_save = open('tmp/emb0','w')
+    for index in range(word_alphabet.size()):
+        emb_array = embedd_table[index, :]
+        assert emb_array.shape[0] == embedd_dim
+        if word_alphabet.get_instance(index) == None:
+            emb_save.write("-unknown-"+ " ")
+        else:
+            emb_save.write(word_alphabet.get_instance(index)+ " ")
+        for idy in range(embedd_dim):
+            if idy == embedd_dim -1:
+                emb_save.write(str(emb_array[idy])+'\n')
+            else:
+                emb_save.write(str(emb_array[idy])+' ')
+    emb_save.close()
     return embedd_table
 
 

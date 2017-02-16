@@ -2,7 +2,7 @@
 # @Author: Jie
 # @Date:   2017-02-15 17:36:37
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 09:44:28
+# @Last Modified time: 2017-02-16 12:20:49
 
 import logging
 import sys
@@ -97,10 +97,13 @@ def write_nbest(inputs, targets, masks, crf_para, label_alphabet,filename, topn,
             file.write("##score## ")
             ## write prob
             for idy in range(last_pi.shape[0]):
+                score = str(round(last_pi[idy],4))
+                if score == "nan":
+                    print "nan score:", last_pi[idy]
                 if idy == last_pi.shape[0] - 1:
-                    file.write(str(round(last_pi[idy],4))+'\n')
+                    file.write(score+'\n')
                 else:
-                    file.write(str(round(last_pi[idy],4))+' ')
+                    file.write(score+' ')
             sent_length = len(predict_label)
             ## write nbest to file
             for idy in range(sent_length):
@@ -225,9 +228,14 @@ def recover_comp_string_to_index(comp_string_list):
 def softmax(oneD_array):
     if np.isnan(oneD_array).any():
         print "x nan:",oneD_array
-    e_x = np.exp(oneD_array)
+    e_x = np.exp(oneD_array-np.max(oneD_array))
     if np.isnan(e_x).any():
         print "e_x nan:",e_x
+    if np.isnan(e_x/e_x.sum()).any():
+        print "final nan occurs!"
+        print "init:", oneD_array
+        print "ex:", e_x
+        print "sum:", e_x.sum()
     return e_x/e_x.sum()
 
 

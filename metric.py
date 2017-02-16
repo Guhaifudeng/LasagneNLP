@@ -2,7 +2,7 @@
 # @Author: Jie
 # @Date:   2017-02-16 09:53:19
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 09:53:24
+# @Last Modified time: 2017-02-16 12:59:46
 
 
 # from operator import add
@@ -251,7 +251,7 @@ def fmeasure_from_singlefile(twolabel_file, label_type="BMES", pred_col=-1):
     print ("P:%s, R:%s, F:%s"%(P,R,F))
 
 if __name__ == '__main__':
-    print "sys:",len(sys.argv)
+    # print "sys:",len(sys.argv)
     if len(sys.argv) == 3:
         fmeasure_from_singlefile(sys.argv[1],"BMES",int(sys.argv[2]))
     else:
