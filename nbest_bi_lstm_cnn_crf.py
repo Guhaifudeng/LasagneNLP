@@ -2,7 +2,7 @@
 # @Author: Max
 # @Date:   2017-02-15 17:41:48
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 13:27:32
+# @Last Modified time: 2017-02-16 19:37:44
 
 
 import time
@@ -171,7 +171,7 @@ def main():
             grad_clipping,
             peepholes))
     num_batches = num_data / batch_size
-    num_epochs = 3
+    num_epochs = 1000
     best_loss = 1e+12
     best_acc = 0.0
     best_epoch_loss = 0
@@ -233,7 +233,9 @@ def main():
             if output_predict:
                 utils.output_predictions(predictions, targets, masks, 'tmp/dev%d' % epoch, label_alphabet,
                                          is_flattened=False)
-            crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,'tmp/nbest_dev%d' % epoch, topn, is_flattened=False)
+            dev_name = dev_path.split('/')[-1]
+            nbest_dev = 'tmp/nbest_'+ dev_name + str(epoch)
+            crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,nbest_dev, topn, is_flattened=False)
         
         print 'dev loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
             dev_err / dev_inst, dev_corr, dev_total, dev_corr * 100 / dev_total)
@@ -271,7 +273,9 @@ def main():
                 if output_predict:
                     utils.output_predictions(predictions, targets, masks, 'tmp/test%d' % epoch, label_alphabet,
                                              is_flattened=False)
-                crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,'tmp/nbest_test%d' % epoch, topn, is_flattened=False)
+                test_name = test_path.split('/')[-1]
+                nbest_test = 'tmp/nbest_'+ test_name + str(epoch)
+                crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,nbest_test, topn, is_flattened=False)
             print 'test loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
                 test_err / test_inst, test_corr, test_total, test_corr * 100 / test_total)
 

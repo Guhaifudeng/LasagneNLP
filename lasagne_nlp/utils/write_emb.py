@@ -2,7 +2,7 @@
 # @Author: Jie
 # @Date:   2017-02-15 17:36:37
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 13:29:06
+# @Last Modified time: 2017-02-16 20:03:37
 
 import logging
 import sys
@@ -20,7 +20,7 @@ def write_to_file(emb_list, output_file):
         word_list.append(line.strip().split()[0])
 
     emb_array = np.asarray(emb_list[0])
-    print "emb array len:", emb_array.shape
+    # print "emb array len:", emb_array.shape
     assert emb_array.ndim == 2
     assert emb_array.shape[0] == len(word_list)
     out_file = open(output_file,'w')
