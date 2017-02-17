@@ -2,7 +2,7 @@
 # @Author: Max
 # @Date:   2017-02-16 10:22:57
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 13:39:03
+# @Last Modified time: 2017-02-17 16:41:29
 
 
 import numpy as np
@@ -14,7 +14,7 @@ from lasagne_nlp.utils import utils as utils
 root_symbol = "##ROOT##"
 root_label = "<ROOT>"
 word_end = "##WE##"
-MAX_LENGTH = 120
+MAX_LENGTH = 130
 MAX_CHAR_LENGTH = 45
 logger = utils.get_logger("LoadData")
 

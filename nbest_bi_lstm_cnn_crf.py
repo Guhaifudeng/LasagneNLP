@@ -2,7 +2,7 @@
 # @Author: Max
 # @Date:   2017-02-15 17:41:48
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 19:37:44
+# @Last Modified time: 2017-02-16 21:46:00
 
 
 import time
@@ -230,11 +230,12 @@ def main():
             dev_corr += corr
             dev_total += num
             dev_inst += inputs.shape[0]
-            if output_predict:
-                utils.output_predictions(predictions, targets, masks, 'tmp/dev%d' % epoch, label_alphabet,
-                                         is_flattened=False)
             dev_name = dev_path.split('/')[-1]
+            save_dev = 'tmp/'+ dev_name + str(epoch)
             nbest_dev = 'tmp/nbest_'+ dev_name + str(epoch)
+            if output_predict:
+                utils.output_predictions(predictions, targets, masks, save_dev, label_alphabet,
+                                         is_flattened=False)
             crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,nbest_dev, topn, is_flattened=False)
         
         print 'dev loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
@@ -270,11 +271,13 @@ def main():
                 test_corr += corr
                 test_total += num
                 test_inst += inputs.shape[0]
-                if output_predict:
-                    utils.output_predictions(predictions, targets, masks, 'tmp/test%d' % epoch, label_alphabet,
-                                             is_flattened=False)
                 test_name = test_path.split('/')[-1]
+                save_test = 'tmp/'+ test_name + str(epoch)
                 nbest_test = 'tmp/nbest_'+ test_name + str(epoch)
+                if output_predict:
+                    utils.output_predictions(predictions, targets, masks, save_test, label_alphabet,
+                                             is_flattened=False)
+                
                 crf_nbest.write_nbest(inputs, targets, masks, crf_para,label_alphabet,nbest_test, topn, is_flattened=False)
             print 'test loss: %.4f, corr: %d, total: %d, acc: %.2f%%' % (
                 test_err / test_inst, test_corr, test_total, test_corr * 100 / test_total)
