@@ -2,7 +2,7 @@
 # @Author: Jie
 # @Date:   2017-02-16 09:53:19
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 12:59:46
+# @Last Modified time: 2017-02-16 21:43:08
 
 
 # from operator import add
@@ -75,8 +75,6 @@ def get_ner_BMES(label_list):
     # assert(list_len == len(label_list)), "word list size unmatch with label list"
     list_len = len(label_list)
     begin_label = 'B-'
-    inside_label = 'M-' 
-    inside2_label = 'I-' 
     end_label = 'E-'
     single_label = 'S-'
     whole_tag = ''
@@ -87,13 +85,11 @@ def get_ner_BMES(label_list):
         # wordlabel = word_list[i]
         current_label = label_list[i].upper()
         if begin_label in current_label:
-            if index_tag == '':
-                whole_tag = current_label.replace(begin_label,"",1) +'[' +str(i)
-                index_tag = current_label.replace(begin_label,"",1)
-            else:
+            if index_tag != '':
                 tag_list.append(whole_tag + ',' + str(i-1))
-                whole_tag = current_label.replace(begin_label,"",1)  + '[' + str(i)
-                index_tag = current_label.replace(begin_label,"",1)
+            whole_tag = current_label.replace(begin_label,"",1) +'[' +str(i)
+            index_tag = current_label.replace(begin_label,"",1)
+            
         elif single_label in current_label:
             if index_tag != '':
                 tag_list.append(whole_tag + ',' + str(i-1))
@@ -101,33 +97,13 @@ def get_ner_BMES(label_list):
             tag_list.append(whole_tag)
             whole_tag = ""
             index_tag = ""
-
-        elif inside_label in current_label:
-            if current_label.replace(inside_label,"",1) == index_tag:
-                whole_tag = whole_tag 
-            else:
-                if (whole_tag != '')&(index_tag != ''):
-                    tag_list.append(whole_tag +',' + str(i-1))
-                whole_tag = ''
-                index_tag = ''
-        elif inside2_label in current_label:
-            if current_label.replace(inside2_label,"",1) == index_tag:
-                whole_tag = whole_tag 
-            else:
-                if (whole_tag != '')&(index_tag != ''):
-                    tag_list.append(whole_tag +',' + str(i-1))
-                whole_tag = ''
-                index_tag = ''
         elif end_label in current_label:
-            if current_label.replace(end_label,"",1) == index_tag:
+            if index_tag != '':
                 tag_list.append(whole_tag +',' + str(i))
             whole_tag = ''
             index_tag = ''
         else:
-            if (whole_tag != '')&(index_tag != ''):
-                tag_list.append(whole_tag +',' + str(i-1))
-            whole_tag = ''
-            index_tag = ''
+            continue
     if (whole_tag != '')&(index_tag != ''):
         tag_list.append(whole_tag)
     tag_list_len = len(tag_list)
@@ -137,6 +113,7 @@ def get_ner_BMES(label_list):
             tag_list[i] = tag_list[i]+ ']'
             insert_list = reverse_style(tag_list[i])
             stand_matrix.append(insert_list)
+    # print stand_matrix
     return stand_matrix
 
 

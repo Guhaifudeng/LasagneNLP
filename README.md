@@ -1,3 +1,3 @@
 # LasagneNLP
-NLP tools on Lasagne
+Sequence Labeling model(BI-LSTM-CRF) with nbest output.
 

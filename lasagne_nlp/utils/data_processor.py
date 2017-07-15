@@ -2,7 +2,7 @@
 # @Author: Max
 # @Date:   2017-02-16 10:22:57
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-17 16:41:29
+# @Last Modified time: 2017-02-20 17:35:20
 
 
 import numpy as np
@@ -306,7 +306,7 @@ def get_max_length(word_sentences):
     return max_len
 
 
-def build_embedd_table(word_alphabet, embedd_dict, embedd_dim, caseless):
+def build_embedd_table(word_alphabet, embedd_dict, embedd_dim, caseless, emb_file = 'tmp/emb0'):
     scale = np.sqrt(3.0 / embedd_dim)
     embedd_table = np.empty([word_alphabet.size(), embedd_dim], dtype=theano.config.floatX)
     embedd_table[word_alphabet.default_index, :] = np.random.uniform(-scale, scale, [1, embedd_dim])
@@ -314,7 +314,7 @@ def build_embedd_table(word_alphabet, embedd_dict, embedd_dim, caseless):
         ww = word.lower() if caseless else word
         embedd = embedd_dict[ww] if ww in embedd_dict else np.random.uniform(-scale, scale, [1, embedd_dim])
         embedd_table[index, :] = embedd
-    emb_save = open('tmp/emb0','w')
+    emb_save = open(emb_file,'w')
     for index in range(word_alphabet.size()):
         emb_array = embedd_table[index, :]
         assert emb_array.shape[0] == embedd_dim
@@ -334,7 +334,7 @@ def build_embedd_table(word_alphabet, embedd_dict, embedd_dim, caseless):
 def load_dataset_sequence_labeling(train_path, dev_path, test_path, word_column=1, label_column=4,
                                    label_name='pos', oov='embedding', fine_tune=False, embedding="word2Vec",
                                    embedding_path=None,
-                                   use_character=False):
+                                   use_character=False, emb_file = 'tmp/emb0'):
     """
     load data from file
     :param train_path: path of training file
@@ -395,7 +395,7 @@ def load_dataset_sequence_labeling(train_path, dev_path, test_path, word_column=
                                                                             max_length) if use_character else (
             None, None, None, None)
         return X_train, Y_train, mask_train, X_dev, Y_dev, mask_dev, X_test, Y_test, mask_test, \
-               build_embedd_table(word_alphabet, embedd_dict, embedd_dim, caseless), label_alphabet, \
+               build_embedd_table(word_alphabet, embedd_dict, embedd_dim, caseless,emb_file), label_alphabet, \
                C_train, C_dev, C_test, char_embedd_table
 
     def construct_tensor_not_fine_tune(word_sentences, label_index_sentences, unknown_embedd, embedd_dict,

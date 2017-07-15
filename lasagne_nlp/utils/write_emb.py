@@ -2,7 +2,7 @@
 # @Author: Jie
 # @Date:   2017-02-15 17:36:37
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 20:03:37
+# @Last Modified time: 2017-02-20 17:42:37
 
 import logging
 import sys
@@ -13,9 +13,9 @@ import theano
 
 
 
-def write_to_file(emb_list, output_file):
+def write_to_file(emb_list, output_file, init_emb_file= 'tmp/emb0'):
     word_list = []
-    origin_emb_lines = open('tmp/emb0','r').readlines()
+    origin_emb_lines = open(init_emb_file,'r').readlines()
     for line in origin_emb_lines:
         word_list.append(line.strip().split()[0])
 

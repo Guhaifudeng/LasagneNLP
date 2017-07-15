@@ -29,7 +29,7 @@ def main():
     parser.add_argument('--gamma', type=float, default=1e-6, help='weight for regularization')
     parser.add_argument('--peepholes', action='store_true', help='Peepholes for LSTM')
     parser.add_argument('--oov', choices=['random', 'embedding'], help='Embedding for oov word', required=True)
-    parser.add_argument('--update', choices=['sgd', 'momentum', 'nesterov', 'adadelta'], help='update algorithm',
+    parser.add_argument('--update', choices=['sgd', 'momentum', 'nesterov', 'adadelta','adam'], help='update algorithm',
                         default='sgd')
     parser.add_argument('--regular', choices=['none', 'l2'], help='regularization for training', required=True)
     parser.add_argument('--dropout', action='store_true', help='Apply dropout layers')

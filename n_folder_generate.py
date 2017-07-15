@@ -2,7 +2,7 @@
 # @Author: Jie
 # @Date:   2017-02-16 17:33:29
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-17 00:19:57
+# @Last Modified time: 2017-02-20 16:49:10
 
 import copy
 import random
@@ -19,7 +19,7 @@ def n_folder_generate(input_file, n_folder):
 		else:
 			sentence += line
 	sent_num = len(sentence_list)
-	random.shuffle(sentence_list)
+	# random.shuffle(sentence_list)
 	print "Read file:",input_file, ", sentence num:", sent_num
 	blocks = []
 	block_size = sent_num/n_folder+1
@@ -52,8 +52,8 @@ def n_folder_generate(input_file, n_folder):
 
 
 if __name__ == '__main__':
-	random.seed(1)
-	n_folder_generate("data/train.bioes",5)
+	# random.seed(1)
+	n_folder_generate("data/train.bio",5)
 
 
 

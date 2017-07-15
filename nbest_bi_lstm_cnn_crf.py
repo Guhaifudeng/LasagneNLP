@@ -2,7 +2,7 @@
 # @Author: Max
 # @Date:   2017-02-15 17:41:48
 # @Last Modified by:   Jie     @Contact: jieynlp@gmail.com
-# @Last Modified time: 2017-02-16 21:46:00
+# @Last Modified time: 2017-04-02 18:48:25
 
 
 import time
@@ -88,11 +88,12 @@ def main():
     output_predict = args.output_prediction
     dropout = args.dropout
     topn = args.nbest
-
+    train_name = train_path.split('/')[-1]
+    init_save_emb_file = 'tmp/'+ train_name + '.emb'
     X_train, Y_train, mask_train, X_dev, Y_dev, mask_dev, X_test, Y_test, mask_test, \
     embedd_table, label_alphabet, \
     C_train, C_dev, C_test, char_embedd_table = data_processor.load_dataset_sequence_labeling(train_path, dev_path,
-                                                                                              test_path,word_column=0, label_column=1, oov=oov, fine_tune=fine_tune,embedding=embedding, embedding_path=embedding_path,  use_character=True)
+                                                                                              test_path,word_column=0, label_column=1, oov=oov, fine_tune=fine_tune,embedding=embedding, embedding_path=embedding_path,  use_character=True, emb_file=init_save_emb_file)
     num_labels = label_alphabet.size() - 1
 
     logger.info("constructing network...")
@@ -258,7 +259,7 @@ def main():
 
             # evaluate on test data when better performance detected, save embedding first
             word_embedding = lasagne.layers.get_all_param_values(layer_incoming2)
-            write_emb.write_to_file(word_embedding,'tmp/emb%d' % epoch)
+            write_emb.write_to_file(word_embedding, init_save_emb_file +'%d' % epoch, init_save_emb_file)
             test_err = 0.0
             test_corr = 0.0
             test_total = 0
